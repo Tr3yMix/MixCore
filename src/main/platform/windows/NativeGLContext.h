@@ -2,8 +2,6 @@
 
 #include <windows.h>
 
-#include "util/Color.h"
-
 namespace win {
     class NativeGLContext {
 

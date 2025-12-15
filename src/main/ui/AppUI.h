@@ -10,6 +10,7 @@ namespace ui {
     public:
 
         explicit AppUI(AppWindow* window);
+        ~AppUI();
 
         void draw() const;
 

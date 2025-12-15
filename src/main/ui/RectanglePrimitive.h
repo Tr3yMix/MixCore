@@ -6,7 +6,7 @@
 
 
 namespace ui {
-    class RectanglePrimitive : public Drawable{
+    class RectanglePrimitive final : public Drawable{
 
     public:
 

@@ -3,7 +3,8 @@
 #include <windows.h>
 
 #include "NativeGLContext.h"
-#include "math/Uint.h"
+#include "core/INativeWindow.h"
+#include "math/Uint32.h"
 #include "math/Vector2.h"
 
 namespace win {
@@ -20,18 +21,22 @@ namespace win {
         WMC(HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam, NativeWindow* window) : hwnd(hwnd), msg(msg), wParam(wParam), lParam(lParam), window(window) {}
     };
 
-    class NativeWindow {
+    class NativeWindow : public INativeWindow {
     public:
         NativeWindow(HINSTANCE hinstance, const std::string& title, const math::Vector2u& windowSize);
-        ~NativeWindow();
+        ~NativeWindow() override;
 
         [[nodiscard]] HDC getDC() const;
         [[nodiscard]] HWND getWindowHandle() const;
 
-        static void processMessages();
-        void swapBuffers() const;
+        [[nodiscard]] math::Uint32 getWidth() const override {return m_width;}
+        [[nodiscard]] math::Uint32 getHeight() const override {return m_height;}
+        [[nodiscard]] bool isRunning() const override {return m_isRunning;}
 
-        math::Uint m_width, m_height;
+        void processMessages() const override;
+        void swapBuffers() const override;
+
+        math::Uint32 m_width, m_height;
 
         bool m_isRunning;
 
@@ -46,9 +51,6 @@ namespace win {
         HGLRC m_hglrc{};
 
         void cleanup();
-
-
-
 
     };
 

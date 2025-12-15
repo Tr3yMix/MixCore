@@ -1,17 +1,19 @@
 #pragma once
 #include "NativeWindow.h"
 
+namespace win {
+    class NativeEventHandler {
 
-class NativeEventHandler {
+    public:
+        static LRESULT handleMessage(const WMC& ctx);
 
-public:
-    static LRESULT handleMessage(const win::WMC& ctx);
+    private:
+        static void handleClose(const WMC& ctx);
 
-private:
-    static void handleClose(const win::WMC& ctx);
+        static void handleResize(const WMC& ctx);
 
-    static void handleResize(const win::WMC& ctx);
+        static void handleLeftMouseDown(const WMC& ctx);
 
-    static void handleLeftMouseDown(const win::WMC& ctx);
+    };
+}
 
-};

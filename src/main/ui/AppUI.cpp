@@ -7,7 +7,7 @@ namespace ui {
 
     AppUI::AppUI(AppWindow* window): m_window(window) {
 
-        Text::InitFont(m_window->getDC());
+        //Text::InitFont(m_window->getDC());
 
         m_text = std::make_unique<Text>("Hello World!", math::Vector2f(.5, .5), util::Color(0xfff));
 
@@ -20,7 +20,13 @@ namespace ui {
         m_exitButton = std::make_unique<RectanglePrimitive>(math::Vector2f(x, 0), 40, 40);
 
         m_exitButton->setColor(util::Color(0xfff));
+
+
         
+    }
+
+    AppUI::~AppUI() {
+        Text::CleanupFont();
     }
 
 
