@@ -1,4 +1,6 @@
 
+#ifdef __linux__
+
 #include "NativeWindow.h"
 
 #include <stdexcept>
@@ -33,10 +35,6 @@ namespace win {
         m_hdc = GetDC(m_hwnd);
         if (!m_hdc) throw std::runtime_error("Failed to get device context.");
 
-        if (!m_glContext.initialize(m_hdc)) {
-            throw std::runtime_error("Failed to initialize OpenGL context.");
-        }
-        m_glContext.makeCurrent();
 
         ShowWindow(m_hwnd, SW_SHOW);
         UpdateWindow(m_hwnd);
@@ -67,7 +65,6 @@ namespace win {
 
     void NativeWindow::cleanup() {
 
-        m_glContext.cleanup();
 
         if (m_hdc) {
             ReleaseDC(m_hwnd, m_hdc);
@@ -90,7 +87,7 @@ namespace win {
     }
 
     void NativeWindow::swapBuffers() const {
-        m_glContext.swapBuffers();
+
     }
 
     HDC NativeWindow::getDC() const {
@@ -103,3 +100,4 @@ namespace win {
 
 
 }
+#endif

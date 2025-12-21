@@ -1,25 +1,21 @@
 #include "AppWindow.h"
 
-#include "ui/Drawable.h"
-
-//windows
 #ifdef _WIN32
-
-#include "platform/windows/NativeWindow.h"
-
+#include "platform/windows/Window.h"
 #endif
+
+#include "ui/Drawable.h"
 
 // ReSharper disable once CppParameterMayBeConst
 AppWindow::AppWindow(const math::Vector2u& windowSize, const std::string& title){
 
 #ifdef _WIN32
-
-    HINSTANCE hInstance = GetModuleHandle(nullptr);
-    m_nativeWindow = std::make_unique<win::NativeWindow>(hInstance, title, windowSize);
-
-#else
-    #error "Platform not Supported"
+    m_platformWindow = std::make_unique<windows::Window>(
+        GetModuleHandle(nullptr),
+        "MixCore",
+        math::Vector2u(1280, 720));
 #endif
+
 
     m_width = windowSize.signedX();
     m_height = windowSize.signedY();
@@ -29,11 +25,15 @@ void AppWindow::draw(ui::Drawable& drawable) const {
     drawable.draw(*this);
 }
 
-void AppWindow::update() const {
-    m_nativeWindow->processMessages();
-    m_nativeWindow->swapBuffers();
+void AppWindow::processMessages() const {
+    m_platformWindow->processMessages();
 }
 
 bool AppWindow::isRunning() const {
-    return m_nativeWindow->isRunning();
+    return m_platformWindow->isRunning();
 }
+
+PlatformWindow &AppWindow::get() const {
+    return *m_platformWindow;
+}
+

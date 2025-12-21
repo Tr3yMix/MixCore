@@ -1,13 +1,13 @@
 
-#include "NativeEventHandler.h"
+#ifdef __linux__
 
-#include <GL/gl.h>
+#include "NativeEventHandler.h"
 
 #include "core/EventDispatcher.h"
 
-extern EventDispatcher g_eventDispatcher;
+//extern EventDispatcher g_eventDispatcher;
 
-namespace win {
+namespace linux {
     LRESULT NativeEventHandler::handleMessage(const WMC& ctx) {
 
         switch (ctx.msg) {
@@ -24,7 +24,7 @@ namespace win {
                 eCtx.height = HIWORD(ctx.lParam);
                 const Event event(EventType::WindowResized, eCtx);
 
-                g_eventDispatcher.pushEvent(event);
+                //g_eventDispatcher.pushEvent(event);
                 break;
             }
             case WM_LBUTTONDOWN: {
@@ -34,14 +34,14 @@ namespace win {
                 eCtx.mouseY = HIWORD(ctx.lParam);
                 const Event event(EventType::MouseButtonPressed, eCtx);
 
-                g_eventDispatcher.pushEvent(event);
+                //g_eventDispatcher.pushEvent(event);
                 break;
             }
             case WM_CLOSE: {
                 //handleClose(ctx);
                 const Event event(EventType::WindowClosed);
 
-                g_eventDispatcher.pushEvent(event);
+                //g_eventDispatcher.pushEvent(event);
                 break;
             }
             case WM_DESTROY: break;
@@ -53,7 +53,6 @@ namespace win {
     void NativeEventHandler::handleResize(const WMC& ctx){
         ctx.window->m_width = LOWORD(ctx.lParam);
         ctx.window->m_height = HIWORD(ctx.lParam);
-        glViewport(0, 0, ctx.window->m_width.signedInt(), ctx.window->m_height.signedInt());
     }
 
     void NativeEventHandler::handleLeftMouseDown(const WMC& ctx){
@@ -68,5 +67,5 @@ namespace win {
         PostQuitMessage(0);
     }
 }
-
+#endif
 

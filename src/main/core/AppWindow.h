@@ -2,8 +2,8 @@
 
 #include <memory>
 
-#include "INativeWindow.h"
 #include "math/Vector2.h"
+#include "platform/PlatformWindow.h"
 #include "ui/DrawTarget.h"
 
 
@@ -15,14 +15,13 @@ public:
 
     void draw(ui::Drawable& drawable) const override;
 
-    std::unique_ptr<INativeWindow> m_nativeWindow;
+    std::unique_ptr<PlatformWindow> m_platformWindow;
 
-    void update() const;
+    void processMessages() const;
 
     [[nodiscard]] bool isRunning() const;
 
-
-private:
+    [[nodiscard]] PlatformWindow& get() const;
 
 
 };

@@ -1,8 +1,10 @@
 #pragma once
+
+#ifdef __linux__
+
 #include <string>
 #include <windows.h>
 
-#include "NativeGLContext.h"
 #include "core/INativeWindow.h"
 #include "math/Uint32.h"
 #include "math/Vector2.h"
@@ -44,7 +46,6 @@ namespace win {
 
         static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-        NativeGLContext m_glContext;
 
         HWND m_hwnd;
         HDC m_hdc;
@@ -55,3 +56,4 @@ namespace win {
     };
 
 } // win
+#endif

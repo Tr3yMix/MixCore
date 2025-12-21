@@ -4,7 +4,6 @@
 #include "math/Vector2.h"
 #include "util/Color.h"
 
-
 namespace ui {
     class RectanglePrimitive final : public Drawable{
 
@@ -15,7 +14,6 @@ namespace ui {
         void setColor(const util::Color& color);
 
         void draw(const DrawTarget& target) const override;
-
 
     private:
 

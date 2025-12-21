@@ -1,8 +1,9 @@
 #pragma once
-#include "NativeWindow.h"
 
-namespace win {
-    class NativeEventHandler {
+#include "Window.h"
+
+namespace windows {
+    class EventHandler {
 
     public:
         static LRESULT handleMessage(const WMC& ctx);
@@ -16,4 +17,5 @@ namespace win {
 
     };
 }
+
 

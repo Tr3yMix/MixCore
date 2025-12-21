@@ -1,40 +1,22 @@
 
+#include "core/Application.h"
 #include "core/AppWindow.h"
+#include "platform/windows/Window.h"
+#include "platform/windows/vulkan/VulkanSurfaceWin32.h"
 #include "ui/AppUI.h"
 #include "util/Logger.h"
 
-/*
-// ReSharper disable once CppParameterMayBeConst
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR, int) {
-
-    Logger::init();
-
-    AppWindow window({800u, 600u}, "OverlayCrafter", hInstance);
-
-    const ui::AppUI ui(&window);
-
-    while (window.isRunning()) {
-        window.update();
-        ui.draw();
-    }
-
-    return 0;
-}
-*/
 
 int main() {
     Logger::init();
 
-    AppWindow window({800u, 600u}, "OverlayCrafter");
+    Application MixCoreDemo;
 
-    const ui::AppUI ui(&window);
+    MixCoreDemo.createWindow(math::Vector2u(1280, 720), "MixCoreDemo");
+    MixCoreDemo.createRenderer();
+    MixCoreDemo.initializeRenderer();
+    MixCoreDemo.run();
 
-    math::Uint32 zero = 0;
-
-    while (window.isRunning()) {
-        window.update();
-        ui.draw();
-    }
 
     return 0;
 }

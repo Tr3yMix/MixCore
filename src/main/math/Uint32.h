@@ -1,13 +1,15 @@
 #pragma once
 
-#include <iostream>
+#include <climits>
 #include <cstdint>
+#include <iostream>
 
 namespace math {
 
     struct Uint32{
 
-    private: uint32_t value;
+    private:
+        uint32_t value;
 
     public:
 

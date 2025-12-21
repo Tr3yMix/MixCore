@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Windows.h>
-#include <format>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -28,6 +26,7 @@ namespace Logger {
         return "[]: ";
     }
 
+    /*
     inline WORD logColor(const LogType logType) {
         switch (logType) {
             case LogType::Info: return FOREGROUND_GREEN | FOREGROUND_INTENSITY;
@@ -37,6 +36,7 @@ namespace Logger {
         }
         return FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE | FOREGROUND_INTENSITY;
     }
+    */
 
     inline void init() {
         std::ofstream logFile("log.txt", std::ios::trunc);
@@ -59,8 +59,10 @@ namespace Logger {
         std::stringstream stream;
         (stream << ... << std::forward<Args>(args));
         // ReSharper disable once CppLocalVariableMayBeConst
+        /*
         HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
         SetConsoleTextAttribute(consoleHandle, logColor(type));
+        */
         std::cout << logTypeToString(type) << stream.str() << std::endl;
 
         outputToFile(type, stream.str());
@@ -78,11 +80,15 @@ namespace Logger {
     template <Streamable... Args>
     void info(Args&&... args){log(LogType::Info, std::forward<Args>(args)...);}
 
+    /*
+
     template <typename... Args>
     void logf(const LogType type, const std::string_view fmt, Args&&... args) {
         // ReSharper disable once CppLocalVariableMayBeConst
+        /*
         HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
         SetConsoleTextAttribute(consoleHandle, logColor(type));
+
         std::cout << logTypeToString(type) << std::vformat(fmt, std::make_format_args(args...)) << std::endl;
 
         outputToFile(type, std::vformat(fmt, std::make_format_args(args...)));
@@ -107,6 +113,8 @@ namespace Logger {
     void infof(std::string_view fmt, Args&&... args) {
         logf(LogType::Info, fmt, std::forward<Args>(args)...);
     }
+
+    */
 
 }
 

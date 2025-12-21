@@ -1,6 +1,5 @@
 #pragma once
 #include "RectanglePrimitive.h"
-#include "Text.h"
 #include "core/AppWindow.h"
 
 namespace ui {
@@ -10,7 +9,6 @@ namespace ui {
     public:
 
         explicit AppUI(AppWindow* window);
-        ~AppUI();
 
         void draw() const;
 
@@ -19,7 +17,6 @@ namespace ui {
     private:
         AppWindow* m_window;
 
-        std::unique_ptr<Text> m_text;
         std::unique_ptr<RectanglePrimitive> m_topBar;
         std::unique_ptr<RectanglePrimitive> m_exitButton;
 
