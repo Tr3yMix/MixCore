@@ -2,13 +2,11 @@
 
 #include "RectanglePrimitive.h"
 
-namespace ui {
+namespace MixCore::ui {
 
     AppUI::AppUI(AppWindow* window): m_window(window) {
 
         //Text::InitFont(m_window->getDC());
-
-
 
         m_topBar = std::make_unique<RectanglePrimitive>(math::Vector2f(0, 0), static_cast<float>(m_window->getWidth()), 40);
 
@@ -20,8 +18,6 @@ namespace ui {
 
         m_exitButton->setColor(util::Color(0xfff));
 
-
-        
     }
 
 

@@ -3,7 +3,7 @@
 
 #include "EventHandler.h"
 
-namespace windows {
+namespace MixCore::win32 {
 
     // ReSharper disable once CppParameterMayBeConst
     Window::Window(HINSTANCE hinstance, const std::string& title, const math::Vector2u& windowSize):
@@ -31,9 +31,6 @@ namespace windows {
 
         ShowWindow(m_hwnd, SW_SHOW);
         UpdateWindow(m_hwnd);
-
-        //m_renderer->init
-
 
     }
 

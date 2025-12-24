@@ -2,7 +2,7 @@
 
 #include "Window.h"
 
-namespace windows {
+namespace MixCore::win32 {
     class EventHandler {
 
     public:

@@ -4,7 +4,7 @@
 #include "math/Vector2.h"
 #include "util/Color.h"
 
-namespace ui {
+namespace MixCore::ui {
     class RectanglePrimitive final : public Drawable{
 
     public:

@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace util {
+namespace MixCore::util {
 
 
     class Color {

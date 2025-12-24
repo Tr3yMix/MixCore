@@ -6,7 +6,7 @@
 
 #include "Uint32.h"
 
-namespace math {
+namespace MixCore::math {
 
     struct Vector2f {
 
@@ -179,7 +179,7 @@ namespace math {
         Vector2u& operator-=(const Vector2u& other) noexcept {
             x -= other.x; y -= other.y; return *this;
         }
-        Vector2u& operator*=(const Uint32 scalar) noexcept {
+        Vector2u& operator*=(const math::Uint32 scalar) noexcept {
             x *= scalar; y *= scalar; return *this;
         }
         Vector2u& operator/=(const Uint32 scalar) noexcept {

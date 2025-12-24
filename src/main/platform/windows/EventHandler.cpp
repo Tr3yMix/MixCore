@@ -6,7 +6,7 @@
 
 //extern EventDispatcher g_eventDispatcher;
 
-namespace windows {
+namespace MixCore::win32 {
     LRESULT EventHandler::handleMessage(const WMC& ctx) {
 
         switch (ctx.msg) {

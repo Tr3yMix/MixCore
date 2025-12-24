@@ -8,7 +8,7 @@
 #include "platform/PlatformWindow.h"
 #include "renderer/Renderer.h"
 
-namespace windows {
+namespace MixCore::win32 {
 
     //window message context
     struct WMC {

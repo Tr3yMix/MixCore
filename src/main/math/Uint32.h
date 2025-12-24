@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <iostream>
 
-namespace math {
+namespace MixCore::math {
 
     struct Uint32{
 
@@ -138,3 +138,6 @@ namespace math {
 
 
 }
+
+
+

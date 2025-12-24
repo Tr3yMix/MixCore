@@ -6,23 +6,26 @@
 #include "platform/PlatformWindow.h"
 #include "ui/DrawTarget.h"
 
+namespace MixCore {
+    class AppWindow final : public ui::DrawTarget{
 
-class AppWindow final : public ui::DrawTarget{
+    public:
 
-public:
+        AppWindow(const math::Vector2u& windowSize, const std::string& title);
 
-    AppWindow(const math::Vector2u& windowSize, const std::string& title);
+        void draw(ui::Drawable& drawable) const override;
 
-    void draw(ui::Drawable& drawable) const override;
+        std::unique_ptr<PlatformWindow> m_platformWindow;
 
-    std::unique_ptr<PlatformWindow> m_platformWindow;
+        void processMessages() const;
 
-    void processMessages() const;
+        [[nodiscard]] bool isRunning() const;
 
-    [[nodiscard]] bool isRunning() const;
-
-    [[nodiscard]] PlatformWindow& get() const;
+        [[nodiscard]] PlatformWindow& get() const;
 
 
-};
+    };
+}
+
+
 

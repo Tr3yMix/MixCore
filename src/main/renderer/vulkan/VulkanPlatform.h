@@ -11,7 +11,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 
-namespace vkplatform {
+namespace MixCore::renderer::vulkan::platform {
     inline std::vector<const char*> requiredInstanceExtensions() {
         std::vector extensions = {
             VK_KHR_SURFACE_EXTENSION_NAME
@@ -28,7 +28,7 @@ namespace vkplatform {
 
     inline VulkanSurface* getSurface(const PlatformWindow& window) {
 #ifdef _WIN32
-        return new VulkanSurfaceWin32(window);
+        return new win32::VulkanSurfaceWin32(window);
 #elif defined(__linux__)
         return nullptr;
 #endif

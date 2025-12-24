@@ -6,34 +6,36 @@
 
 #include "ui/Drawable.h"
 
-// ReSharper disable once CppParameterMayBeConst
-AppWindow::AppWindow(const math::Vector2u& windowSize, const std::string& title){
+namespace MixCore {
+    // ReSharper disable once CppParameterMayBeConst
+    AppWindow::AppWindow(const math::Vector2u& windowSize, const std::string& title){
 
 #ifdef _WIN32
-    m_platformWindow = std::make_unique<windows::Window>(
-        GetModuleHandle(nullptr),
-        "MixCore",
-        math::Vector2u(1280, 720));
+        m_platformWindow = std::make_unique<win32::Window>(
+            GetModuleHandle(nullptr),
+            title,
+            windowSize);
 #endif
 
 
-    m_width = windowSize.signedX();
-    m_height = windowSize.signedY();
-}
+        m_width = windowSize.signedX();
+        m_height = windowSize.signedY();
+    }
 
-void AppWindow::draw(ui::Drawable& drawable) const {
-    drawable.draw(*this);
-}
+    void AppWindow::draw(ui::Drawable& drawable) const {
+        drawable.draw(*this);
+    }
 
-void AppWindow::processMessages() const {
-    m_platformWindow->processMessages();
-}
+    void AppWindow::processMessages() const {
+        m_platformWindow->processMessages();
+    }
 
-bool AppWindow::isRunning() const {
-    return m_platformWindow->isRunning();
-}
+    bool AppWindow::isRunning() const {
+        return m_platformWindow->isRunning();
+    }
 
-PlatformWindow &AppWindow::get() const {
-    return *m_platformWindow;
+    PlatformWindow &AppWindow::get() const {
+        return *m_platformWindow;
+    }
 }
 
