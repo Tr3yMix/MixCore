@@ -10,9 +10,9 @@ namespace MixCore::renderer::vulkan {
 
 
     void VulkanSwapchain::init(
-        const VkPhysicalDevice physicalDevice,
-        const VkDevice device,
-        const VkSurfaceKHR surface,
+        VkPhysicalDevice physicalDevice,
+        VkDevice device,
+        VkSurfaceKHR surface,
         const uint32_t width,
         const uint32_t height,
         const uint32_t graphicsQueueFamily,
@@ -143,5 +143,7 @@ namespace MixCore::renderer::vulkan {
         actualExtent.height = std::clamp(height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
         return actualExtent;
     }
+
+
 
 }

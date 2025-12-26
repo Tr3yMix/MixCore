@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef _WIN32
+
 #include <windows.h>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vulkan_win32.h>
@@ -17,6 +19,8 @@ namespace MixCore::win32 {
         VkSurfaceKHR create(VkInstance& instance) override {
             VkWin32SurfaceCreateInfoKHR info{};
             info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+            info.pNext = nullptr;
+            info.flags = 0;
             info.hwnd = static_cast<HWND>(m_window.getNativeHandle());
             info.hinstance = static_cast<HINSTANCE>(m_window.getInstanceHandle());
 
@@ -35,3 +39,5 @@ namespace MixCore::win32 {
         const PlatformWindow& m_window;
     };
 }
+#endif
+

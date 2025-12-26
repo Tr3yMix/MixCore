@@ -3,7 +3,7 @@
 
 namespace MixCore{
 
-    enum class RendererType { VULKAN, OPENGL };
+    enum class RendererType { VULKAN, OPENGL, DIRECTX11, DIRECTX12 };
 
     class Renderer {
     public:

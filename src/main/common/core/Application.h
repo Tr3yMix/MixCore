@@ -1,8 +1,10 @@
 #pragma once
 #include <memory>
 
+#include "AppWindow.h"
+#include "math/Vector2.h"
 #include "renderer/Renderer.h"
-#include "ui/AppUI.h"
+
 
 namespace MixCore {
     class Application {

@@ -1,7 +1,10 @@
 #include "AppWindow.h"
 
 #ifdef _WIN32
-#include "platform/windows/Window.h"
+    #include "platform/windows/Window.h"
+#elif defined(__linux__)
+
+    #include "platform/linux/Window.h"
 #endif
 
 #include "ui/Drawable.h"
@@ -15,6 +18,11 @@ namespace MixCore {
             GetModuleHandle(nullptr),
             title,
             windowSize);
+
+#elif defined(__linux__)
+
+        m_platformWindow = std::make_unique<linux::Window>(title, windowSize);
+
 #endif
 
 

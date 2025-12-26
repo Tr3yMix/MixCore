@@ -14,20 +14,40 @@ set(RESOURCE_DIR "${CMAKE_SOURCE_DIR}/src/resources")
 add_compile_definitions(RESOURCE_DIR="${RESOURCE_DIR}")
 
 # === Source Files ===
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
-        src/main/*.cpp
-        src/main/*.h
+file(GLOB_RECURSE COMMON_SRC CONFIGURE_DEPENDS
+        src/main/main.cpp
+        src/main/common/*.cpp
+        src/main/common/*.h
 )
 
+# === Platform-specific compile definitions ===
+if (WIN32)
+    file(GLOB_RECURSE PLATFORM_SRC CONFIGURE_DEPENDS
+            src/main/platform/windows/*.cpp
+            src/main/platform/windows/*.h
+    )
+elseif (UNIX)
+    file(GLOB_RECURSE PLATFORM_SRC CONFIGURE_DEPENDS
+            src/main/platform/linux/*.cpp
+            src/main/platform/linux/*.h
+    )
+endif ()
+
 # === Executable ===
-add_executable(MixCore ${SRC_FILES})
+add_executable(MixCore
+        ${COMMON_SRC}
+        ${PLATFORM_SRC}
+)
 
 # === Include Directories ===
 target_include_directories(MixCore PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/main/common
 )
 
-# === Vulkan Setup ===
+# ==========================================================
+# Vulkan
+# ==========================================================
 
 find_package(Vulkan REQUIRED)
 if (Vulkan_FOUND)
@@ -35,18 +55,27 @@ if (Vulkan_FOUND)
     target_link_libraries(MixCore PRIVATE Vulkan::Vulkan)
 endif ()
 
-# === Platform-specific compile definitions ===
-if (WIN32)
-    target_compile_definitions(MixCore PRIVATE OC_PLATFORM_WINDOWS)
-elseif (UNIX)
-    target_compile_definitions(MixCore PRIVATE OC_PLATFORM_LINUX)
-endif()
 
-# === Warnings (optional but recommended) ===
+
+# ==========================================================
+# Linux (X11)
+# ==========================================================
+if (UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+
+    target_link_libraries(MixCore PRIVATE X11)
+
+    target_compile_definitions(MixCore PRIVATE
+            VK_USE_PLATFORM_XLIB_KHR
+    )
+endif ()
+
+# === Warnings ===
 if (MSVC)
     target_compile_options(MixCore PRIVATE /W4)
-else()
+else ()
     target_compile_options(MixCore PRIVATE -Wall -Wextra -Wpedantic)
-endif()
+endif ()
+
 
 

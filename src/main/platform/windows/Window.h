@@ -6,7 +6,6 @@
 #include "math/Uint32.h"
 #include "math/Vector2.h"
 #include "platform/PlatformWindow.h"
-#include "renderer/Renderer.h"
 
 namespace MixCore::win32 {
 
