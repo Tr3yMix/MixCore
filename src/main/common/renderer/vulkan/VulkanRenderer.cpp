@@ -7,6 +7,7 @@
 #include "util/Logger.h"
 
 namespace MixCore::renderer::vulkan {
+
     void VulkanRenderer::init(const PlatformWindow& window) {
         createInstance();
         createSurface(window);
@@ -18,8 +19,9 @@ namespace MixCore::renderer::vulkan {
         createFramebuffers();
         createCommandPool();
         createCommandBuffers();
-        for (size_t i = 0; i < m_commandBuffers.size(); i++) recordCommandBuffers(m_commandBuffers[i], static_cast<uint32_t>(i));
         createGraphicsPipeline();
+        for (size_t i = 0; i < m_commandBuffers.size(); i++) recordCommandBuffers(m_commandBuffers[i], static_cast<uint32_t>(i));
+
         log(Logger::LogType::Debug, "Vulkan Initialized!");
     }
 
@@ -241,6 +243,8 @@ namespace MixCore::renderer::vulkan {
         if (vkCreateCommandPool(m_device, &poolInfo, nullptr, &m_commandPool) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create command pool!");
         }
+
+        log(Logger::LogType::Debug, "Command Pool Created!");
     }
 
     void VulkanRenderer::createCommandBuffers() {
@@ -255,9 +259,14 @@ namespace MixCore::renderer::vulkan {
         if (vkAllocateCommandBuffers(m_device, &allocInfo, m_commandBuffers.data()) != VK_SUCCESS) {
             throw std::runtime_error("Failed to allocate command buffers!");
         }
+
+        log(Logger::LogType::Debug, "Command Buffers Created!");
     }
 
     void VulkanRenderer::recordCommandBuffers(VkCommandBuffer commandBuffer, uint32_t imageIndex) const {
+
+        vkResetCommandBuffer(commandBuffer, 0);
+
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
@@ -278,7 +287,19 @@ namespace MixCore::renderer::vulkan {
 
 
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_graphicsPipeline);
-        // TODO: add vkCmdDraw commands here
+
+        VkViewport viewport{};
+        viewport.x = 0.0f;
+        viewport.y = static_cast<float>(m_swapchain.getExtent().height);
+        viewport.width = static_cast<float>(m_swapchain.getExtent().width);
+        viewport.height = -static_cast<float>(m_swapchain.getExtent().height);
+        viewport.minDepth = 0.0f;
+        viewport.maxDepth = 1.0f;
+        vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
+
+        VkRect2D scissor{{0, 0}, m_swapchain.getExtent()};
+        vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+
         vkCmdDraw(commandBuffer, 3, 1, 0, 0); //draws a single triangle
 
         vkCmdEndRenderPass(commandBuffer);
@@ -286,6 +307,8 @@ namespace MixCore::renderer::vulkan {
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to record command buffer!");
         }
+
+        log(Logger::LogType::Debug, "Command Buffer Recorded!");
 
     }
 
@@ -525,7 +548,7 @@ namespace MixCore::renderer::vulkan {
         std::vector<char> buffer(fileSize);
 
         file.seekg(0);
-        file.read(buffer.data(), static_cast<long>(fileSize));
+        file.read(buffer.data(), fileSize);
         file.close();
 
         return buffer;

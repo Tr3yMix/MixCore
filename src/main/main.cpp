@@ -4,6 +4,7 @@
 
 
 int main() {
+
     MixCore::Logger::init();
 
     MixCore::Application MixCoreDemo;
@@ -13,7 +14,6 @@ int main() {
     MixCoreDemo.createRenderer(MixCore::RendererType::VULKAN);//TODO: Add support for pluggable renderer backends selectable at runtime
 
     MixCoreDemo.initializeRenderer();
-
 
     MixCoreDemo.run();
 

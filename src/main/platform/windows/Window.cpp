@@ -23,7 +23,7 @@ namespace MixCore::win32 {
 
         if (!RegisterClassExA(&wc)) throw std::runtime_error("Failed to register window class.");
 
-        m_hwnd = CreateWindowEx(0, wc.lpszClassName, title.c_str(), WS_POPUP, CW_USEDEFAULT,
+        m_hwnd = CreateWindowEx(0, wc.lpszClassName, title.c_str(), WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
             CW_USEDEFAULT, m_width.signedInt(), m_height.signedInt(), nullptr, nullptr, hinstance, this);
 
         if (!m_hwnd) throw std::runtime_error("Failed to create window.");

@@ -17,7 +17,7 @@ namespace MixCore::win32 {
                 break;
             }
             case WM_SIZE: {
-                //handleResize(ctx);
+                handleResize(ctx);
                 EventContext eCtx;
                 eCtx.width = LOWORD(ctx.lParam);
                 eCtx.height = HIWORD(ctx.lParam);
@@ -27,7 +27,7 @@ namespace MixCore::win32 {
                 break;
             }
             case WM_LBUTTONDOWN: {
-                //handleLeftMouseDown(ctx);
+                handleLeftMouseDown(ctx);
                 EventContext eCtx;
                 eCtx.mouseX = LOWORD(ctx.lParam);
                 eCtx.mouseY = HIWORD(ctx.lParam);
@@ -37,7 +37,7 @@ namespace MixCore::win32 {
                 break;
             }
             case WM_CLOSE: {
-                //handleClose(ctx);
+                handleClose(ctx);
                 const Event event(EventType::WindowClosed);
 
                 //g_eventDispatcher.pushEvent(event);
