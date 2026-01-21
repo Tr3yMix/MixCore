@@ -6,7 +6,7 @@
 #include "math/Vector2.h"
 
 
-namespace MixCore::ui {
+namespace Coreful::ui {
     RectanglePrimitive::RectanglePrimitive(const math::Vector2f position, const float width, const float height):
     m_position(position), m_width(width), m_height(height) {}
 

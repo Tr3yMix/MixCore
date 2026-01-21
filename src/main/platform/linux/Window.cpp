@@ -1,7 +1,7 @@
 
 #include "Window.h"
 
-namespace MixCore::linux {
+namespace Coreful::linux {
 
     Window::Window(const std::string& title, const math::Vector2u& windowSize) : m_width(windowSize.x), m_height(windowSize.y) {
 
@@ -51,7 +51,8 @@ namespace MixCore::linux {
         cleanup();
     }
 
-    void Window::processMessages() {
+
+    void Window::processMessages(){
         while (XPending(m_display)) {
             XEvent event;
             XNextEvent(m_display, &event);

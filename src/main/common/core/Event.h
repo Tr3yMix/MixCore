@@ -1,7 +1,7 @@
 #pragma once
 
 
-namespace MixCore {
+namespace Coreful {
 
     enum class EventType {
         None,

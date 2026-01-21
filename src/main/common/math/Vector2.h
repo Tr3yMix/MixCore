@@ -6,7 +6,7 @@
 
 #include "Uint32.h"
 
-namespace MixCore::math {
+namespace Coreful::math {
 
     struct Vector2f {
 
@@ -113,7 +113,7 @@ namespace MixCore::math {
         [[nodiscard]] signed int signedX() const {return x.signedInt();}
         [[nodiscard]] signed int signedY() const {return y.signedInt();}
 
-        [[nodiscard]] float length() const noexcept {
+        [[nodiscard]] float hypotonuse() const noexcept {
             return std::sqrt(static_cast<float>(x.raw()) * static_cast<float>(x.raw()) + static_cast<float>(y.raw()) * static_cast<float>(y.raw()));
         }
 
@@ -129,7 +129,7 @@ namespace MixCore::math {
         }
 
         static float distance(const Vector2u& a, const Vector2u& b) noexcept {
-            return (a - b).length();
+            return (a - b).hypotonuse();
         }
 
         //Comparison Operators
@@ -179,7 +179,7 @@ namespace MixCore::math {
         Vector2u& operator-=(const Vector2u& other) noexcept {
             x -= other.x; y -= other.y; return *this;
         }
-        Vector2u& operator*=(const math::Uint32 scalar) noexcept {
+        Vector2u& operator*=(const Uint32 scalar) noexcept {
             x *= scalar; y *= scalar; return *this;
         }
         Vector2u& operator/=(const Uint32 scalar) noexcept {

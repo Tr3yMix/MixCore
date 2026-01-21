@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <iostream>
 
-namespace MixCore::math {
+namespace Coreful::math {
 
     struct Uint32{
 

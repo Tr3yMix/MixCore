@@ -5,7 +5,7 @@
 #include "math/Vector2.h"
 #include "platform/PlatformWindow.h"
 
-namespace MixCore::linux {
+namespace Coreful::linux {
 
     class Window final : public PlatformWindow{
 

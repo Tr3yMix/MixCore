@@ -8,7 +8,7 @@
     #include "platform/linux/vulkan/VulkanSurfaceX11.h"
 #endif
 
-namespace MixCore::renderer::vulkan {
+namespace Coreful::renderer::vulkan {
     std::vector<const char*> VulkanPlatform::requiredInstanceExtensions() {
         {
             std::vector extensions = {

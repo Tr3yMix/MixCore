@@ -2,7 +2,7 @@
 
 #include "RectanglePrimitive.h"
 
-namespace MixCore::ui {
+namespace Coreful::ui {
 
     AppUI::AppUI(AppWindow* window): m_window(window) {
 

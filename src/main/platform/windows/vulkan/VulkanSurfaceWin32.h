@@ -11,7 +11,7 @@
 
 #include "renderer/vulkan/VulkanSurface.h"
 
-namespace MixCore::win32 {
+namespace Coreful::win32 {
     class VulkanSurfaceWin32 final : public renderer::vulkan::VulkanSurface {
     public:
         explicit VulkanSurfaceWin32(const PlatformWindow& window) : m_window(window) {}

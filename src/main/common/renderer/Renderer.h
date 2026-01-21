@@ -1,15 +1,15 @@
 #pragma once
 #include "platform/PlatformWindow.h"
 
-namespace MixCore{
+namespace Coreful{
 
-    enum class RendererType { VULKAN, OPENGL, DIRECTX11, DIRECTX12 };
+    enum class RendererType { VULKAN, OPENGL, USER_PREFERENCE };
 
     class Renderer {
     public:
         virtual ~Renderer() = default;
 
-        virtual void init(const PlatformWindow& window) = 0;
+        virtual void init(PlatformWindow& window) = 0;
         virtual void render() = 0;
         virtual void cleanup() = 0;
     };

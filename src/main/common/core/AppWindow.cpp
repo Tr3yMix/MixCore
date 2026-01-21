@@ -9,7 +9,7 @@
 
 #include "ui/Drawable.h"
 
-namespace MixCore {
+namespace Coreful {
     // ReSharper disable once CppParameterMayBeConst
     AppWindow::AppWindow(const math::Vector2u& windowSize, const std::string& title){
 

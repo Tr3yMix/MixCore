@@ -6,7 +6,7 @@
 #include <string>
 
 
-namespace MixCore::Logger {
+namespace Coreful::Logger {
 
     template<typename T>
     concept Streamable = requires(std::ostream& os, T t)

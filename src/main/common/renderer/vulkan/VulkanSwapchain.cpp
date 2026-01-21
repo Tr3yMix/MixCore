@@ -6,17 +6,16 @@
 
 #include "util/Logger.h"
 
-namespace MixCore::renderer::vulkan {
+namespace Coreful::renderer::vulkan {
 
 
     void VulkanSwapchain::init(
         VkPhysicalDevice physicalDevice,
         VkDevice device,
         VkSurfaceKHR surface,
-        const uint32_t width,
-        const uint32_t height,
+        uint32_t width, uint32_t height,
         const uint32_t graphicsQueueFamily,
-        const uint32_t presentQueueFamily) {
+        const uint32_t presentQueueFamily){
 
         const auto [capabilities, formats, presentModes] = querySupport(physicalDevice, surface);
         auto [format, colorSpace] = chooseSwapSurfaceFormat(formats);

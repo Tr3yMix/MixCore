@@ -3,7 +3,7 @@
 
 #include "EventHandler.h"
 
-namespace MixCore::win32 {
+namespace Coreful::win32 {
 
     // ReSharper disable once CppParameterMayBeConst
     Window::Window(HINSTANCE hinstance, const std::string& title, const math::Vector2u& windowSize):

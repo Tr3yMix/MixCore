@@ -3,7 +3,7 @@
 #include <optional>
 
 
-namespace MixCore::renderer::vulkan {
+namespace Coreful::renderer::vulkan {
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;

@@ -1,14 +1,24 @@
 
 #include "VulkanRenderer.h"
 
+#include <cstring>
 #include <set>
 #include <vector>
 
 #include "util/Logger.h"
 
-namespace MixCore::renderer::vulkan {
+#ifdef NDEBUG
+constexpr bool ENABLE_VALIDATION_LAYERS = false;
+#else
+constexpr bool ENABLE_VALIDATION_LAYERS = true;
+#endif
 
-    void VulkanRenderer::init(const PlatformWindow& window) {
+const std::vector VALIDATION_LAYERS = {"VK_LAYER_KHRONOS_validation"};
+
+namespace Coreful::renderer::vulkan {
+
+    void VulkanRenderer::init(PlatformWindow& window){
+        m_window = &window;
         createInstance();
         createSurface(window);
         pickPhysicalDevice();
@@ -16,21 +26,22 @@ namespace MixCore::renderer::vulkan {
         createSyncObjects();
         initializeSwapchain(window);
         createRenderPass();
+        createGraphicsPipeline();
         createFramebuffers();
         createCommandPool();
         createCommandBuffers();
-        createGraphicsPipeline();
+
         for (size_t i = 0; i < m_commandBuffers.size(); i++) recordCommandBuffers(m_commandBuffers[i], static_cast<uint32_t>(i));
 
-        log(Logger::LogType::Debug, "Vulkan Initialized!");
+        log(Logger::LogType::Info, "Vulkan Initialized!");
     }
 
     void VulkanRenderer::createInstance() {
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "MixCore";
+        appInfo.pApplicationName = "Coreful";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "MixCore Engine";
+        appInfo.pEngineName = "Coreful Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_2;
 
@@ -51,22 +62,33 @@ namespace MixCore::renderer::vulkan {
         std::vector<VkExtensionProperties> available(extCount);
         vkEnumerateInstanceExtensionProperties(nullptr, &extCount, available.data());
 
+        if (ENABLE_VALIDATION_LAYERS && !checkValidationLayerSupport()) {
+            throw std::runtime_error("Validation layers requested, but not available!");
+        }
+
+        if (ENABLE_VALIDATION_LAYERS) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(VALIDATION_LAYERS.size());
+            createInfo.ppEnabledLayerNames = VALIDATION_LAYERS.data();
+            log(Logger::LogType::Info, "Validation Layers Enabled!");
+        }else createInfo.enabledLayerCount = 0;
+
 
         if (const VkResult result = vkCreateInstance(&createInfo, nullptr, &m_instance); result != VK_SUCCESS) {
             log(Logger::LogType::Error, "Failed to create Vulkan Instance! Error code: ", result);
             throw std::runtime_error("Failed to create Vulkan Instance!");
         }
+        log(Logger::LogType::Info, "Vulkan Instance Created!");
     }
 
     void VulkanRenderer::createSurface(const PlatformWindow& window){
-        log(Logger::LogType::Debug, "Creating Surface...");
+        log(Logger::LogType::Info, "Creating Surface...");
         const std::unique_ptr<VulkanSurface> surfaceFactory = VulkanPlatform::getSurface(window);
         m_surface = surfaceFactory->create(m_instance);
     }
 
 
     void VulkanRenderer::pickPhysicalDevice() {
-        log(Logger::LogType::Debug, "Picking Physical Device...");
+        log(Logger::LogType::Info, "Picking Physical Device...");
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
 
@@ -88,7 +110,7 @@ namespace MixCore::renderer::vulkan {
     }
 
     void VulkanRenderer::createLogicalDevice() {
-        log(Logger::LogType::Debug, "Creating Logical Device...");
+        log(Logger::LogType::Info, "Creating Logical Device...");
         constexpr float queuePriority = 1.0f;
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -109,13 +131,37 @@ namespace MixCore::renderer::vulkan {
         VkPhysicalDeviceFeatures deviceFeatures{};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
 
+
+        uint32_t extensionCount = 0;
+        vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &extensionCount, availableExtensions.data());
+
+        bool maintenance1Supported = false;
+        for (const auto& extension : availableExtensions) {
+            if (strcmp(extension.extensionName, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME) == 0) {
+                maintenance1Supported = true;
+                break;
+            }
+        }
+
+        VkPhysicalDeviceSwapchainMaintenance1FeaturesEXT swapchainMaintenance1Features{};
+        swapchainMaintenance1Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_EXT;
+        swapchainMaintenance1Features.pNext = nullptr;
+        swapchainMaintenance1Features.swapchainMaintenance1 = VK_TRUE;
+
+
         VkDeviceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
         createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.pNext = maintenance1Supported ? &swapchainMaintenance1Features : nullptr;
 
-        const std::vector deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        if (maintenance1Supported) {deviceExtensions.push_back(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME);}
+
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
@@ -124,25 +170,62 @@ namespace MixCore::renderer::vulkan {
             throw std::runtime_error("Failed to create logical device!");
         }
 
+        uint32_t enabledCount = 0;
+        vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &enabledCount, nullptr);
+        std::vector<VkExtensionProperties> enabledExtensions(enabledCount);
+        vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &enabledCount, enabledExtensions.data());
+
+        m_hasSwapchainMaintenance1 = false;
+        for (const auto& extension : enabledExtensions) {
+            if (strcmp(extension.extensionName, VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME) == 0) {
+                m_hasSwapchainMaintenance1 = true;
+                break;
+            }
+        }
+
         vkGetDeviceQueue(m_device, m_queueFamilyIndices.graphicsFamily.value(), 0, &m_graphicsQueue);
         vkGetDeviceQueue(m_device, m_queueFamilyIndices.presentFamily.value(), 0, &m_presentQueue);
     }
 
     void VulkanRenderer::createSyncObjects() {
+
+        m_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
         VkSemaphoreCreateInfo semaphoreInfo{};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphore);
-        vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphore);
 
         VkFenceCreateInfo fenceInfo{};
         fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFence);
+
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(m_device, &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create synchronization objects for a frame!");
+                }
+        }
+
+        // --- Presentation fences (maintenance1) ---
+        if (m_hasSwapchainMaintenance1) {
+            m_presentFences.resize(MAX_FRAMES_IN_FLIGHT);
+
+            VkFenceCreateInfo presentFenceInfo{};
+            presentFenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            presentFenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+                if (vkCreateFence(m_device, &presentFenceInfo, nullptr, &m_presentFences[i]) != VK_SUCCESS) {
+                    throw std::runtime_error("Failed to create presentation fence!");
+                }
+            }
+        }
     }
 
     void VulkanRenderer::initializeSwapchain(const PlatformWindow& window) {
-        log(Logger::LogType::Debug, "Initializing Swapchain...");
+        log(Logger::LogType::Info, "Initializing Swapchain...");
 
         if (const SwapchainSupportDetails support = VulkanSwapchain::querySupport(m_physicalDevice, m_surface);
             support.formats.empty() || support.presentModes.empty()) {
@@ -158,6 +241,19 @@ namespace MixCore::renderer::vulkan {
             m_queueFamilyIndices.graphicsFamily.value(),
             m_queueFamilyIndices.presentFamily.value()
             );
+
+        m_imagesInFlight.clear();
+        m_imagesInFlight.resize(m_swapchain.getImageCount(), VK_NULL_HANDLE);
+
+        m_renderFinishedSemaphoresPerImage.resize(m_swapchain.getImageCount());
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        for(auto& semaphore : m_renderFinishedSemaphoresPerImage) {
+            if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
+                throw std::runtime_error("Failed to create per-image render finished semaphore!");
+            }
+        }
 
         log(Logger::LogType::Debug, "Swapchain Initialized!");
     }
@@ -207,12 +303,17 @@ namespace MixCore::renderer::vulkan {
 
     }
 
+    void VulkanRenderer::createDepthResources() {
+        //nothing yet
+        //TODO: create depth image + views
+    }
+
     void VulkanRenderer::createFramebuffers() {
 
-        m_framebuffers.resize(m_swapchain.getImages().size());
+        m_framebuffers.resize(m_swapchain.getImageViews().size());
 
-        for (size_t i = 0; i < m_swapchain.getImages().size(); i++) {
-            const VkImageView attachments[] = {m_swapchain.getImages()[i]};
+        for (size_t i = 0; i < m_swapchain.getImageViews().size(); i++) {
+            const VkImageView attachments[] = {m_swapchain.getImageViews()[i]};
 
             VkFramebufferCreateInfo framebufferInfo{};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -226,8 +327,6 @@ namespace MixCore::renderer::vulkan {
             if (vkCreateFramebuffer(m_device, &framebufferInfo, nullptr, &m_framebuffers[i]) != VK_SUCCESS) {
                 throw std::runtime_error("Failed to create framebuffer!");
             }
-
-
         }
 
         log(Logger::LogType::Debug, "Framebuffers Created!");
@@ -279,7 +378,8 @@ namespace MixCore::renderer::vulkan {
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_swapchain.getExtent();
 
-        VkClearValue clearColor = {0.2f, 0.3f, 0.3f, 1.0f};
+        VkClearValue clearColor{};
+        clearColor.color = {0.2f, 0.3f, 0.3f, 1.0f};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 
@@ -297,7 +397,7 @@ namespace MixCore::renderer::vulkan {
         viewport.maxDepth = 1.0f;
         vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 
-        VkRect2D scissor{{0, 0}, m_swapchain.getExtent()};
+        const VkRect2D scissor{{0, 0}, m_swapchain.getExtent()};
         vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
         vkCmdDraw(commandBuffer, 3, 1, 0, 0); //draws a single triangle
@@ -307,8 +407,6 @@ namespace MixCore::renderer::vulkan {
         if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
             throw std::runtime_error("Failed to record command buffer!");
         }
-
-        log(Logger::LogType::Debug, "Command Buffer Recorded!");
 
     }
 
@@ -400,6 +498,13 @@ namespace MixCore::renderer::vulkan {
         colorBlending.attachmentCount = 1;
         colorBlending.pAttachments = &colorBlendAttachment;
 
+        std::vector dynamicStateEnables = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+
+        VkPipelineDynamicStateCreateInfo dynamicState{};
+        dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStateEnables.size());
+        dynamicState.pDynamicStates = dynamicStateEnables.data();
+
         //Pipeline Layout
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
@@ -421,10 +526,10 @@ namespace MixCore::renderer::vulkan {
         pipelineInfo.pRasterizationState = &rasterizer;
         pipelineInfo.pMultisampleState = &multisampling;
         pipelineInfo.pColorBlendState = &colorBlending;
+        pipelineInfo.pDynamicState = &dynamicState;
         pipelineInfo.layout = m_pipelineLayout;
         pipelineInfo.renderPass = m_renderPass;
         pipelineInfo.subpass = 0;
-
 
         if (vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_graphicsPipeline) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create graphics pipeline!");
@@ -433,8 +538,6 @@ namespace MixCore::renderer::vulkan {
         vkDestroyShaderModule(m_device, vertShaderModule, nullptr);
         vkDestroyShaderModule(m_device, fragShaderModule, nullptr);
 
-
-
     }
 
 
@@ -442,17 +545,36 @@ namespace MixCore::renderer::vulkan {
 
     void VulkanRenderer::render() {
 
-        vkWaitForFences(m_device, 1, &m_inFlightFence, VK_TRUE, UINT64_MAX);
-        vkResetFences(m_device, 1, &m_inFlightFence);
+        //Wait for this frame's in-flight fence
+        vkWaitForFences(m_device,1,&m_inFlightFences[m_currentFrame],VK_TRUE,UINT64_MAX);
+        vkResetFences(m_device,1,&m_inFlightFences[m_currentFrame]);
 
+        //Acquire next image
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(m_device, m_swapchain.get(), UINT64_MAX, m_imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+        const VkResult acquireResult = vkAcquireNextImageKHR(
+            m_device,m_swapchain.get(),UINT64_MAX,
+            m_imageAvailableSemaphores[m_currentFrame],VK_NULL_HANDLE, &imageIndex);
+
+        if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) { recreateSwapchain(); return; }
+        if (acquireResult != VK_SUCCESS && acquireResult != VK_SUBOPTIMAL_KHR) {
+            throw std::runtime_error("Failed to acquire swap chain image!");
+        }
+
+
+        //Wait for the fence tied to this image, if it exists
+        if (m_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+            vkWaitForFences(m_device, 1, &m_imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+        }
+        m_imagesInFlight[imageIndex] = m_inFlightFences[m_currentFrame];
+
+        //Submit draw commands
+
 
         VkSubmitInfo submitInfo{};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphore};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        const VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
+        constexpr VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
@@ -460,34 +582,62 @@ namespace MixCore::renderer::vulkan {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &m_commandBuffers[imageIndex];
 
-        VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphore};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
+        //--- Signal semaphores ---
+        VkSemaphore signalSemaphore;
+        if (m_hasSwapchainMaintenance1) {
+            signalSemaphore = m_renderFinishedSemaphores[m_currentFrame];
+        }else {
+            signalSemaphore = m_renderFinishedSemaphoresPerImage[imageIndex];
+        }
 
-        if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFence) != VK_SUCCESS) {
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = &signalSemaphore;
+
+        if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS) {
             throw std::runtime_error("Failed to submit draw command buffer!");
         }
 
+        // Present
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
-
-        VkSwapchainKHR swapChains[] = {m_swapchain.get()};
+        presentInfo.pWaitSemaphores = &signalSemaphore;
+        const VkSwapchainKHR swapChains[] = {m_swapchain.get()};
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
-        presentInfo.pResults = nullptr;
 
-        if (const VkResult result = vkQueuePresentKHR(m_presentQueue, &presentInfo); result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-            // TODO: recreate swapchain if window resized
-        } else if (result != VK_SUCCESS) {
+
+        //Only include a present fence if maintenance1 feature is enabled
+        if (m_hasSwapchainMaintenance1) {
+            VkSwapchainPresentFenceInfoKHR swapchainPresentFenceInfo{};
+            vkWaitForFences(m_device, 1, &m_presentFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+            vkResetFences(m_device, 1, &m_presentFences[m_currentFrame]);
+            swapchainPresentFenceInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_PRESENT_FENCE_INFO_KHR;
+            swapchainPresentFenceInfo.swapchainCount = 1;
+            swapchainPresentFenceInfo.pFences = &m_presentFences[m_currentFrame];
+            presentInfo.pNext = &swapchainPresentFenceInfo;
+        }
+
+        if (const VkResult presentResult = vkQueuePresentKHR(m_presentQueue, &presentInfo); presentResult == VK_ERROR_OUT_OF_DATE_KHR || presentResult == VK_SUBOPTIMAL_KHR) {
+            recreateSwapchain();
+        } else if (presentResult != VK_SUCCESS) {
             throw std::runtime_error("Failed to present swapchain image!");
         }
 
+        m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
     }
 
+
+
     void VulkanRenderer::cleanup() {
+
+        if (m_hasSwapchainMaintenance1) {
+            for (const auto fence : m_presentFences) {
+                vkDestroyFence(m_device, fence, nullptr);
+            }
+        }
 
         vkDeviceWaitIdle(m_device);
 
@@ -497,14 +647,80 @@ namespace MixCore::renderer::vulkan {
         vkDestroyRenderPass(m_device, m_renderPass, nullptr);
         vkDestroyPipeline(m_device, m_graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(m_device, m_pipelineLayout, nullptr);
-        vkDestroySemaphore(m_device, m_imageAvailableSemaphore, nullptr);
-        vkDestroySemaphore(m_device, m_renderFinishedSemaphore, nullptr);
-        vkDestroyFence(m_device, m_inFlightFence, nullptr);
+
+        for (const auto semaphore : m_renderFinishedSemaphoresPerImage) {
+            vkDestroySemaphore(m_device, semaphore, nullptr);
+        }
+
+        for(size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            vkDestroySemaphore(m_device, m_imageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(m_device, m_renderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(m_device, m_inFlightFences[i], nullptr);
+        }
+        vkDestroyCommandPool(m_device, m_commandPool, nullptr);
 
         if (m_device != VK_NULL_HANDLE) vkDestroyDevice(m_device, nullptr);
         if (m_surface != VK_NULL_HANDLE) vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
         if (m_instance != VK_NULL_HANDLE) vkDestroyInstance(m_instance, nullptr);
 
+    }
+
+
+    void VulkanRenderer::recreateSwapchain() {
+        uint32_t width = 0, height = 0;
+
+        while (width == 0 || height == 0) {
+            width = m_window->getWidth().raw();
+            height = m_window->getHeight().raw();
+
+            m_window->processMessages();
+
+        }
+
+        vkDeviceWaitIdle(m_device);
+
+        cleanupFramebuffers();
+        cleanupDepthResources();
+        m_swapchain.cleanup(m_device);
+
+        m_swapchain.init(
+            m_physicalDevice,
+            m_device,
+            m_surface,
+            width,
+            height,
+            m_queueFamilyIndices.graphicsFamily.value(),
+            m_queueFamilyIndices.presentFamily.value()
+            );
+
+        createDepthResources();
+        createFramebuffers();
+
+        vkFreeCommandBuffers(m_device, m_commandPool, static_cast<uint32_t>(m_commandBuffers.size()), m_commandBuffers.data());
+
+        createCommandBuffers();
+
+        for (size_t i = 0; i < m_commandBuffers.size(); i++) {
+            recordCommandBuffers(m_commandBuffers[i], static_cast<uint32_t>(i));
+        }
+
+        m_imagesInFlight.clear();
+        m_imagesInFlight.resize(m_swapchain.getImageCount(), VK_NULL_HANDLE);
+
+    }
+
+    void VulkanRenderer::cleanupFramebuffers() {
+
+        for (const auto framebuffer : m_framebuffers) {
+            vkDestroyFramebuffer(m_device, framebuffer, nullptr);
+        }
+        m_framebuffers.clear();
+
+    }
+
+    void VulkanRenderer::cleanupDepthResources() {
+        //nothing yet
+        //TODO: destroy depth image, memory, and views
     }
 
 
@@ -537,6 +753,26 @@ namespace MixCore::renderer::vulkan {
 
     }
 
+    bool VulkanRenderer::checkValidationLayerSupport() {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const char* layerName : VALIDATION_LAYERS) {
+            bool layerFound = false;
+            for (const auto& layerProperties : availableLayers) {
+                if (strcmp(layerName, layerProperties.layerName) == 0) {
+                    layerFound = true;
+                    break;
+                }
+            }
+            if (!layerFound) return false;
+        }
+        return true;
+    }
+
     std::vector<char> VulkanRenderer::readFile(const std::string &filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary); // open at end to get size
 
@@ -548,13 +784,9 @@ namespace MixCore::renderer::vulkan {
         std::vector<char> buffer(fileSize);
 
         file.seekg(0);
-        file.read(buffer.data(), fileSize);
+        file.read(buffer.data(), static_cast<std::streamsize>(fileSize));
         file.close();
 
         return buffer;
     }
 }
-
-
-
-

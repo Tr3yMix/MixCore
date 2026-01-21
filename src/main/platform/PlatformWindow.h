@@ -2,7 +2,7 @@
 
 #include "math/Uint32.h"
 
-namespace MixCore {
+namespace Coreful {
     struct PlatformWindow {
 
         virtual ~PlatformWindow() = default;

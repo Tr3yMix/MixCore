@@ -1,6 +1,6 @@
 #pragma once
 
-namespace MixCore::ui {
+namespace Coreful::ui {
     class Drawable;
 
     class DrawTarget {

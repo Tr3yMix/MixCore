@@ -6,7 +6,7 @@
 #include "platform/PlatformWindow.h"
 #include "ui/DrawTarget.h"
 
-namespace MixCore {
+namespace Coreful {
     class AppWindow final : public ui::DrawTarget{
 
     public:

@@ -3,7 +3,7 @@
 
 #include "Event.h"
 
-namespace MixCore {
+namespace Coreful {
     class EventDispatcher {
 
     public:

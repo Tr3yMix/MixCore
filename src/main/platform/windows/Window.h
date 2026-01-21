@@ -7,7 +7,7 @@
 #include "math/Vector2.h"
 #include "platform/PlatformWindow.h"
 
-namespace MixCore::win32 {
+namespace Coreful::win32 {
 
     //window message context
     struct WMC {

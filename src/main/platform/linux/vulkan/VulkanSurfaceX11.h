@@ -9,7 +9,7 @@
 #include "platform/PlatformWindow.h"
 #include "util/Logger.h"
 
-namespace MixCore::linux {
+namespace Coreful::linux {
 
     class VulkanSurfaceX11 final : public renderer::vulkan::VulkanSurface {
     public:

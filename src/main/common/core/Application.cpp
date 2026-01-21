@@ -3,7 +3,7 @@
 
 #include "renderer/vulkan/VulkanRenderer.h"
 
-namespace MixCore {
+namespace Coreful {
     Application::Application()= default;
 
     Application::~Application() = default;

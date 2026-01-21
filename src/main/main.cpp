@@ -5,17 +5,17 @@
 
 int main() {
 
-    MixCore::Logger::init();
+    Coreful::Logger::init();
 
-    MixCore::Application MixCoreDemo;
+    Coreful::Application CorefulApp;
 
-    MixCoreDemo.createWindow(MixCore::math::Vector2u(1280, 720), "MixCoreDemo");
+    CorefulApp.createWindow(Coreful::math::Vector2u(1080, 720), "CorefulAppDemo");
 
-    MixCoreDemo.createRenderer(MixCore::RendererType::VULKAN);//TODO: Add support for pluggable renderer backends selectable at runtime
+    CorefulApp.createRenderer(Coreful::RendererType::VULKAN);//TODO: Add support for pluggable renderer backends selectable at runtime
 
-    MixCoreDemo.initializeRenderer();
+    CorefulApp.initializeRenderer();
 
-    MixCoreDemo.run();
+    CorefulApp.run();
 
     return 0;
 }

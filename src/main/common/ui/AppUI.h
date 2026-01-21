@@ -2,7 +2,7 @@
 #include "RectanglePrimitive.h"
 #include "core/AppWindow.h"
 
-namespace MixCore::ui {
+namespace Coreful::ui {
 
     class AppUI {
 

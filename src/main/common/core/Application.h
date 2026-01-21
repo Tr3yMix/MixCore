@@ -6,7 +6,7 @@
 #include "renderer/Renderer.h"
 
 
-namespace MixCore {
+namespace Coreful {
     class Application {
 
     public:

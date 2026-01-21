@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(MixCore LANGUAGES CXX)
+project(Coreful LANGUAGES CXX)
 
 # === C++ Standard ===
 set(CMAKE_CXX_STANDARD 20)
@@ -34,13 +34,13 @@ elseif (UNIX)
 endif ()
 
 # === Executable ===
-add_executable(MixCore
+add_executable(Coreful
         ${COMMON_SRC}
         ${PLATFORM_SRC}
 )
 
 # === Include Directories ===
-target_include_directories(MixCore PRIVATE
+target_include_directories(Coreful PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main/common
 )
@@ -52,7 +52,7 @@ target_include_directories(MixCore PRIVATE
 find_package(Vulkan REQUIRED)
 if (Vulkan_FOUND)
     message(STATUS "Found Vulkan SDK: ${Vulkan_INCLUDE_DIR}")
-    target_link_libraries(MixCore PRIVATE Vulkan::Vulkan)
+    target_link_libraries(Coreful PRIVATE Vulkan::Vulkan)
 endif ()
 
 
@@ -63,18 +63,18 @@ endif ()
 if (UNIX AND NOT APPLE)
     find_package(X11 REQUIRED)
 
-    target_link_libraries(MixCore PRIVATE X11)
+    target_link_libraries(Coreful PRIVATE X11)
 
-    target_compile_definitions(MixCore PRIVATE
+    target_compile_definitions(Coreful PRIVATE
             VK_USE_PLATFORM_XLIB_KHR
     )
 endif ()
 
 # === Warnings ===
 if (MSVC)
-    target_compile_options(MixCore PRIVATE /W4)
+    target_compile_options(Coreful PRIVATE /W4)
 else ()
-    target_compile_options(MixCore PRIVATE -Wall -Wextra -Wpedantic)
+    target_compile_options(Coreful PRIVATE -Wall -Wextra -Wpedantic)
 endif ()
 
 

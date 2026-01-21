@@ -8,7 +8,7 @@
 #include "platform/PlatformWindow.h"
 
 
-namespace MixCore::renderer::vulkan {
+namespace Coreful::renderer::vulkan {
 
     class VulkanPlatform {
     public:
